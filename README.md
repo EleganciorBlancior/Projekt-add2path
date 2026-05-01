@@ -9,6 +9,8 @@ Założeniem projektu jest stworzyć aplikację add2path dla systemu Linux. Prog
  - wypisywać w terminalu wykonaną operację,
  - przekazywać katalogi przez adresy względne i bezwzględne.
 
+Projekt jest napisany w języku C, tworzony i testowany na systemie ArchLinux, dystrybucja CachyOS. 
+ 
 Obrona projektu w dniu 11.06.26r., ma miejsce w sali 338 B1 od 11:30.
 Termin oddania projektu to 7.06.26r.
 
