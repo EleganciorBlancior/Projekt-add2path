@@ -8,6 +8,7 @@ Założeniem projektu jest stworzyć aplikację add2path dla systemu Linux. Prog
  - usuwać katalog przekazany jako parametr, jeśli on tam jest,
  - wypisywać w terminalu wykonaną operację,
  - przekazywać katalogi przez adresy względne i bezwzględne.
+ - wypisywać zmiany dokonane w bieżącej sesji
 
 Projekt jest napisany w języku C, tworzony i testowany na systemie ArchLinux, dystrybucja CachyOS. 
  
