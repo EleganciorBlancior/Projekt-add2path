@@ -19,6 +19,7 @@
 
 #define kolorZielony "\033[32m"
 #define kolorCzerwony "\033[31m"
+#define kolorNiebieski "\033[34m"
 #define kolorReset "\033[0m"
 
 typedef enum {
@@ -53,7 +54,7 @@ void wypiszBlad(const char *msg) {
 }
 
 void wypiszInfo(const char *msg) {
-    printf("  >> %s\n", msg);
+    printf(kolorNiebieski "  >> %s" kolorReset "\n", msg);
 }
 
 // --- wykrywanie powłoki ---
