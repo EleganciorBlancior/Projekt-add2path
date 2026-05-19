@@ -8,9 +8,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="89d8c592-94f5-4980-ad1d-a35fad581151" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/ProjektAdd2Path.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ProjektAdd2Path.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/add2path.c" beforeDir="false" afterPath="$PROJECT_DIR$/add2path.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,7 +74,7 @@
       <updated>1777575950309</updated>
       <workItem from="1777575955405" duration="3083000" />
       <workItem from="1777718547083" duration="835000" />
-      <workItem from="1777881373009" duration="2791000" />
+      <workItem from="1777881373009" duration="6358000" />
     </task>
     <servers />
   </component>
