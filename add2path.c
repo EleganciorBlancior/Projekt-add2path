@@ -402,7 +402,7 @@ int main(int argc, char *argv[]) {
                         wypiszInfo("Restartowanie powłoki...");
                         sleep(1); // daj fish czas na zapis do fish_variables
                         char *powlokaExec = getenv("SHELL");
-                        system("cat ~/.config/fish/fish_variables | grep fish_user_paths");
+                        //system("cat ~/.config/fish/fish_variables | grep fish_user_paths"); <- do debugowania w ramach problemu z usuwaniem katalogów
                         char poleceniePonownego[PATH_MAX + 64];
                         snprintf(poleceniePonownego, sizeof(poleceniePonownego),
                             "set -e PATH; '%s'; exec fish -l", sciezkaAplikacji);
