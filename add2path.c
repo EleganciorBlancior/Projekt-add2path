@@ -539,10 +539,10 @@ int main(int argc, char *argv[]) {
                                 "set -e PATH; '%s'; exec fish -l", sciezkaAplikacji);
                         } else if (powloka == powlokaBASH) {
                             snprintf(poleceniePonownego, sizeof(poleceniePonownego),
-                                "export PATH=''; source ~/.bashrc && '%s'; exec bash", sciezkaAplikacji);
+                                "export PATH=''; source ~/.bashrc; '%s'; exec bash", sciezkaAplikacji);
                         } else if (powloka == powlokaZSH) {
                             snprintf(poleceniePonownego, sizeof(poleceniePonownego),
-                                "export PATH=''; source ~/.zshrc && '%s'; exec zsh", sciezkaAplikacji);
+                                "export PATH=''; source ~/.zshrc; '%s'; exec zsh", sciezkaAplikacji);
                         }
                         execlp(powlokaExec, powlokaExec, "-c", poleceniePonownego, NULL);
 
