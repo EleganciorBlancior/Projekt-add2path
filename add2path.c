@@ -13,18 +13,18 @@
 // odblokowanie funkcji linuxowych (readlink, realpath itp.) - musi być przed #include
 
 #define _DEFAULT_SOURCE
-#include <stdio.h>   // printf, scanf, fopen, fclose, fprintf
-#include <stdlib.h>  // getenv, system, free, remove
-#include <string.h>  // strcmp, strstr, strdup, strtok, strncpy
-#include <unistd.h>  // getcwd, access, execlp, readlink, sleep
-#include <limits.h>  // PATH_MAX <- maksymalna długość ścieżki w systemie
+#include <stdio.h>                                                              // printf, scanf, fopen, fclose, fprintf
+#include <stdlib.h>                                                                      // getenv, system, free, remove
+#include <string.h>                                                           // strcmp, strstr, strdup, strtok, strncpy
+#include <unistd.h>                                                           // getcwd, access, execlp, readlink, sleep
+#include <limits.h>                                                 // PATH_MAX <- maksymalna długość ścieżki w systemie
 
 // kody kolorów ANSI, terminale interpretują \033[ jako początek kodu koloru
 
 #define kolorZielony   "\033[32m"
 #define kolorCzerwony  "\033[31m"
 #define kolorNiebieski "\033[34m"
-#define kolorReset     "\033[0m"  // przywraca domyślny kolor terminala
+#define kolorReset     "\033[0m"                                                   // przywraca domyślny kolor terminala
 
 // enum zamiast gołych liczb, łatwiej czytać powlokaBASH niż 0
 
@@ -93,8 +93,18 @@ const char *nazwaPowloki(TypPowloki typ) {
     }
 }
 
+// zwraca ścieżkę do pliku konfiguracyjnego danej powłoki względem katalogu domowego
+
+const char *plikKonfiguracyjny(TypPowloki typ) {
+    switch (typ) {
+        case powlokaBASH: return "/.bashrc";
+        case powlokaZSH:  return "/.zshrc";
+        default:          return NULL;
+    }
+}
+
 //funkcja do wypisywania epickiego logo epickiego projektu
-//wypisuje naprawde epickie logo
+//wypisuje naprawde epickie logo wygenerowane na stronie do tworzenia tekstu w stylu ASCII art
 
 void wypiszEpickieLogo(TypPowloki powloka) {
     printf(kolorZielony);
@@ -125,7 +135,7 @@ void wypiszMenu() {
     printf("  8. Wyjdź\n");
     printf("============================================\n");
     printf("  Wybór: ");
-    fflush(stdout); // bez fflush tekst może zostać w buforze i nie pojawić się na ekranie
+    fflush(stdout);                               // bez fflush tekst może zostać w buforze i nie pojawić się na ekranie
 }
 
 // sprawdza czy ta sama operacja na tej samej ścieżce jest już w buforze
@@ -146,14 +156,14 @@ int czyWKolejce(const char *sciezka, TypOperacji operacja) {
 int czyWPath(const char *sciezka) {
     char *zmiennaPath = getenv("PATH");
     if (zmiennaPath == NULL) return 0;
-    char *kopia = strdup(zmiennaPath); // strdup robi kopię bo strtok modyfikuje oryginalny string
-    char *token = strtok(kopia, ":");  // pierwszy katalog z PATH
+    char *kopia = strdup(zmiennaPath);                       // strdup robi kopię bo strtok modyfikuje oryginalny string
+    char *token = strtok(kopia, ":");                                                         // pierwszy katalog z PATH
     int znaleziono = 0;
     while (token != NULL) {
         if (strcmp(token, sciezka) == 0) { znaleziono = 1; break; }
-        token = strtok(NULL, ":"); // NULL = kontynuuj cięcie tego samego stringa
+        token = strtok(NULL, ":");                                        // NULL = kontynuuj cięcie tego samego stringa
     }
-    free(kopia); // zwalniamy pamięć zaalokowaną przez strdup, bez tego mamy wyciek pamięci
+    free(kopia);                              // zwalniamy pamięć zaalokowaną przez strdup, bez tego mamy wyciek pamięci
     return znaleziono;
 }
 
@@ -161,7 +171,11 @@ int czyWPath(const char *sciezka) {
 
 void kolejkaDodaj(const char *sciezka) {
     wypiszInfo("Sprawdzanie czy katalog istnieje...");
-    if (access(sciezka, F_OK) != 0) { // access z F_OK sprawdza czy ścieżka istnieje na dysku, zapobiegawczo zeby czasem nie dodalo jakiegos pliku zamiast katalogu bo fish jest glupi
+
+    // access z F_OK sprawdza czy ścieżka istnieje na dysku
+    // zapobiegawczo zeby czasem nie dodalo jakiegos pliku zamiast katalogu bo fish jest glupi
+
+    if (access(sciezka, F_OK) != 0) {
         wypiszBlad("Katalog nie istnieje.");
         return;
     }
@@ -181,14 +195,20 @@ void kolejkaDodaj(const char *sciezka) {
     }
     wypiszInfo("Dodawanie do kolejki zmian...");
     zmiany[liczbaZmian].operacja = operacjaDODAJ;
-    strncpy(zmiany[liczbaZmian].sciezka, sciezka, PATH_MAX - 1); // strncpy zamiast strcpy bo kopiuje max N znaków, bezpieczniejsze
+
+    // strncpy zamiast strcpy bo kopiuje max N znaków, bezpieczniejsze
+
+    strncpy(zmiany[liczbaZmian].sciezka, sciezka, PATH_MAX - 1);
     liczbaZmian++;
 
     //dodatkowe 40 znaków jako margines bezpieczeństwa, w przypadku ścieżki mającej dokładnie 4096 znaków (przeważnie max długość ścieżki w systemie)
     //mogłoby spowodować że dopisanie informacji np. Zakolejkowano dodanie przepełni bufora, co może spowodować nadpisanie innej zmiennej czy adresu powrotu funkcji
 
     char komunikat[PATH_MAX + 40];
-    snprintf(komunikat, sizeof(komunikat), "Zakolejkowano dodanie: %s", sciezka); // snprintf jak printf ale zapisuje do stringa
+
+    // snprintf działa jak printf ale zapisuje do stringa
+
+    snprintf(komunikat, sizeof(komunikat), "Zakolejkowano dodanie: %s", sciezka);
     wypiszOk(komunikat);
 }
 
@@ -233,7 +253,7 @@ void kolejkaUsunIndeks(int indeks) {
 // string match -v zwraca wszystkie elementy listy POZA podanym czyli go usuwa
 
 int zapiszZmianyFish() {
-    char *home = getenv("HOME"); // katalog domowy /home/pawelb
+    char *home = getenv("HOME");                                                        // katalog domowy np. /home/user
     if (home == NULL) {
         wypiszBlad("Nie udało się ustalić HOME.");
         return 0;
@@ -242,7 +262,7 @@ int zapiszZmianyFish() {
     char sciezkaSkryptu[PATH_MAX];
     snprintf(sciezkaSkryptu, sizeof(sciezkaSkryptu), "%s/.cache/add2path_apply.fish", home);
 
-    FILE *skrypt = fopen(sciezkaSkryptu, "w"); // w - otwórz do zapisu, utwórz jeśli nie istnieje
+    FILE *skrypt = fopen(sciezkaSkryptu, "w");                        // w - otwórz do zapisu, utwórz jeśli nie istnieje
     if (skrypt == NULL) {
         wypiszBlad("Nie udało się utworzyć skryptu tymczasowego.");
         return 0;
@@ -256,12 +276,69 @@ int zapiszZmianyFish() {
         }
     }
 
-    fclose(skrypt); // fclose jest konieczne - bez niego dane mogą nie zostać zapisane na dysk
+    fclose(skrypt);                           // fclose jest konieczne - bez niego dane mogą nie zostać zapisane na dysk
 
     char polecenie[PATH_MAX + 64];
     snprintf(polecenie, sizeof(polecenie), "fish '%s'", sciezkaSkryptu);
-    system(polecenie); // wykonuje podaną komendę w terminalu
-    remove(sciezkaSkryptu); // usuwa plik tymczasowy po wykonaniu
+    system(polecenie);                                                            // wykonuje podaną komendę w terminalu
+    remove(sciezkaSkryptu);                                                        // usuwa plik tymczasowy po wykonaniu
+    return 1;
+}
+
+// tworzy tymczasowy skrypt sh, wykonuje go przez system() i usuwa
+// dodawanie: dopisuje export PATH="$PATH:/sciezka" na końcu .bashrc/.zshrc przez >> (append, nie nadpisuje)
+// usuwanie: grep -v wypisuje wszystkie linie OPRÓCZ tych zawierających daną ścieżkę, wynik leci do pliku tymczasowego
+//           który potem zastępuje oryginał przez mv, nie można czytać i pisać do tego samego pliku jednocześnie
+
+int zapiszZmianyPowloka(TypPowloki powloka) {
+    char *home = getenv("HOME");
+    if (home == NULL) {
+        wypiszBlad("Nie udało się ustalić HOME.");
+        return 0;
+    }
+
+    // składamy pełną ścieżkę do pliku konfiguracyjnego np. /home/pawelb/.bashrc
+
+    char sciezkaKonfigu[PATH_MAX];
+    snprintf(sciezkaKonfigu, sizeof(sciezkaKonfigu), "%s%s", home, plikKonfiguracyjny(powloka));
+
+    char sciezkaSkryptu[PATH_MAX];
+    snprintf(sciezkaSkryptu, sizeof(sciezkaSkryptu), "%s/.cache/add2path_apply.sh", home);
+
+    FILE *skrypt = fopen(sciezkaSkryptu, "w");                        // w - otwórz do zapisu, utwórz jeśli nie istnieje
+    if (skrypt == NULL) {
+        wypiszBlad("Nie udało się utworzyć skryptu tymczasowego.");
+        return 0;
+    }
+
+    fprintf(skrypt, "#!/bin/sh\n");
+
+    for (int i = 0; i < liczbaZmian; i++) {
+        if (zmiany[i].operacja == operacjaDODAJ) {
+            fprintf(skrypt, "echo 'export PATH=\"$PATH:%s\"' >> '%s'\n",
+
+            // >> dopisuje na koniec pliku zamiast go nadpisywać
+
+                zmiany[i].sciezka, sciezkaKonfigu);
+        } else {
+
+            // grep -v zwraca wszystkie linie OPRÓCZ pasujących do wzorca - czyli usuwa wpis ze ścieżką
+            // wynik zapisujemy do .tmp, potem mv zastępuje oryginał - nie można pisać i czytać tego samego pliku
+
+            fprintf(skrypt, "grep -v 'PATH.*%s' '%s' > '%s.tmp' && mv '%s.tmp' '%s'\n",
+                zmiany[i].sciezka, sciezkaKonfigu, sciezkaKonfigu, sciezkaKonfigu, sciezkaKonfigu);
+        }
+    }
+
+    fclose(skrypt);                           // fclose jest konieczne - bez niego dane mogą nie zostać zapisane na dysk
+
+    // nadajemy skryptowi uprawnienia do wykonania, bez tego system odmówi uruchomienia
+    // chmod 700 = tylko właściciel może czytać, pisać i wykonywać
+
+    char polecenie[PATH_MAX * 2 + 64];                     // dwa razy PATH_MAX bo sciezkaSkryptu pojawia się dwukrotnie
+    snprintf(polecenie, sizeof(polecenie), "chmod 700 '%s' && sh '%s'", sciezkaSkryptu, sciezkaSkryptu);
+    system(polecenie);                                                            // wykonuje podaną komendę w terminalu
+    remove(sciezkaSkryptu);                                                        // usuwa plik tymczasowy po wykonaniu
     return 1;
 }
 
@@ -274,6 +351,8 @@ int zapiszZmiany(TypPowloki powloka) {
     }
     switch (powloka) {
         case powlokaFISH: return zapiszZmianyFish();
+        case powlokaBASH: return zapiszZmianyPowloka(powlokaBASH);
+        case powlokaZSH:  return zapiszZmianyPowloka(powlokaZSH);
         default:
             wypiszBlad("Obsługa tej powłoki jeszcze niezaimplementowana.");
             return 0;
@@ -371,7 +450,7 @@ void usunZKolejki() {
     int numer;
     if (scanf("%d", &numer) != 1) {
         int znak;
-        while ((znak = getchar()) != '\n' && znak != EOF); // czyścimy bufor wejścia po błędnym wpisie
+        while ((znak = getchar()) != '\n' && znak != EOF);                   // czyścimy bufor wejścia po błędnym wpisie
         wypiszBlad("Nieprawidłowy numer.");
         return;
     }
@@ -385,7 +464,7 @@ void usunZKolejki() {
 
     char komunikat[PATH_MAX + 40];
     snprintf(komunikat, sizeof(komunikat), "Usunięto z kolejki: %s", zmiany[numer - 1].sciezka);
-    kolejkaUsunIndeks(numer - 1); // -1 bo tablica jest indeksowana od 0, a menu wyświetla od 1
+    kolejkaUsunIndeks(numer - 1);                          // -1 bo tablica jest indeksowana od 0, a menu wyświetla od 1
     wypiszOk(komunikat);
 }
 
@@ -402,17 +481,17 @@ int main(int argc, char *argv[]) {
 
     char sciezkaAplikacji[PATH_MAX];
     ssize_t len = readlink("/proc/self/exe", sciezkaAplikacji, sizeof(sciezkaAplikacji) - 1);
-    if (len != -1) sciezkaAplikacji[len] = '\0'; // readlink nie dodaje \0 na końcu stringa, robimy to ręcznie
-    else realpath(argv[0], sciezkaAplikacji);     // fallback gdyby readlink zawiodło
+    if (len != -1) sciezkaAplikacji[len] = '\0';           // readlink nie dodaje \0 na końcu stringa, robimy to ręcznie
+    else realpath(argv[0], sciezkaAplikacji);                                        // fallback gdyby readlink zawiodło
 
-    int dziala = 1; // flaga pętli głównej, 0 kończy działanie
+    int dziala = 1;                                                           // flaga pętli głównej, 0 kończy działanie
     while (dziala) {
         wypiszMenu();
 
         int wybor;
         if (scanf("%d", &wybor) != 1) {
             int znak;
-            while ((znak = getchar()) != '\n' && znak != EOF); // czyścimy bufor po błędnym wpisie
+            while ((znak = getchar()) != '\n' && znak != EOF);                       // czyścimy bufor po błędnym wpisie
             wypiszBlad("Podaj liczbę od 1 do 8.");
             printf("\n");
             continue;
@@ -439,11 +518,27 @@ int main(int argc, char *argv[]) {
                     if (zapiszZmiany(powloka)) {
                         wypiszOk("Zmiany zapisane pomyślnie.");
                         wypiszInfo("Restartowanie powłoki...");
-                        sleep(1); // czekamy sekundę żeby fish zdążył zapisać fish_variables przed restartem, o dziwo naprawiło to 50% problemów
+
+                        // czekamy sekundę żeby fish zdążył zapisać fish_variables przed restartem
+                        // o dziwo naprawiło to 50% problemów
+
+                        sleep(1);
                         char *powlokaExec = getenv("SHELL");
                         char poleceniePonownego[PATH_MAX + 64];
-                        snprintf(poleceniePonownego, sizeof(poleceniePonownego),
-                            "set -e PATH; '%s'; exec fish -l", sciezkaAplikacji);
+
+                        // dla fish czyścimy PATH żeby wczytał go na nowo z fish_variables
+                        // dla bash/zsh source wczytuje nowy .bashrc/.zshrc ze świeżymi wpisami PATH
+
+                        if (powloka == powlokaFISH) {
+                            snprintf(poleceniePonownego, sizeof(poleceniePonownego),
+                                "set -e PATH; '%s'; exec fish -l", sciezkaAplikacji);
+                        } else if (powloka == powlokaBASH) {
+                            snprintf(poleceniePonownego, sizeof(poleceniePonownego),
+                                "source ~/.bashrc && '%s'; exec bash", sciezkaAplikacji);
+                        } else if (powloka == powlokaZSH) {
+                            snprintf(poleceniePonownego, sizeof(poleceniePonownego),
+                                "source ~/.zshrc && '%s'; exec zsh", sciezkaAplikacji);
+                        }
                         execlp(powlokaExec, powlokaExec, "-c", poleceniePonownego, NULL);
 
                         // execlp zastępuje bieżący proces nowym a stary przestaje istnieć
@@ -470,7 +565,7 @@ int main(int argc, char *argv[]) {
                 printf("\n");
                 if (potwierdzenie == 't' || potwierdzenie == 'T') {
                     printf("  Do zobaczenia!\n");
-                    dziala = 0; // wyjście z pętli głównej, program kończy działanie
+                    dziala = 0;                                     // wyjście z pętli głównej, program kończy działanie
                 } else {
                     printf("  Anulowano.\n");
                 }
