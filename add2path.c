@@ -170,14 +170,31 @@ int czyWPath(const char *sciezka) {
 // zapisuje operację dodania do bufora i nic jeszcze nie zmienia w systemie
 
 void kolejkaDodaj(const char *sciezka) {
-    wypiszInfo("Sprawdzanie czy katalog istnieje...");
 
-    // access z F_OK sprawdza czy ścieżka istnieje na dysku
-    // zapobiegawczo zeby czasem nie dodalo jakiegos pliku zamiast katalogu bo fish jest glupi
+    // ścieżki względne zaczynają się od czegoś innego niż / - nie możemy sprawdzić ich przez access()
+    // bo access szuka względem bieżącego katalogu i mógłby przypadkowo znaleźć coś co nie ma sensu w PATH
+    // przy ścieżce bezwzględnej sprawdzamy czy katalog faktycznie istnieje na dysku
 
-    if (access(sciezka, F_OK) != 0) {
-        wypiszBlad("Katalog nie istnieje.");
-        return;
+    if (sciezka[0] == '/') {
+        wypiszInfo("Sprawdzanie czy katalog istnieje...");
+
+        // access z F_OK sprawdza czy ścieżka istnieje na dysku
+        // zapobiegawczo zeby czasem nie dodalo jakiegos pliku zamiast katalogu bo fish jest glupi
+
+        if (access(sciezka, F_OK) != 0) {
+            wypiszBlad("Katalog nie istnieje.");
+            return;
+        }
+    } else {
+        wypiszBlad("Podana ścieżka jest względna - może nie działać poprawnie w PATH.");
+        printf("  Czy chcesz kontynuować? (t/n): ");
+        fflush(stdout);
+        char potwierdzenie;
+        scanf(" %c", &potwierdzenie);
+        if (potwierdzenie != 't' && potwierdzenie != 'T') {
+            printf("  Anulowano.\n");
+            return;
+        }
     }
     wypiszInfo("Sprawdzanie czy katalog jest już w PATH...");
     if (czyWPath(sciezka)) {
@@ -382,7 +399,7 @@ void usunBiezacy() {
 }
 
 // ścieżki bezwzględne zaczynają się od / np. /home/pawelb/projekty
-// ścieżki względne od czegoś innego np. ./projekty - w PATH powinny być tylko bezwzględne ale add2path wspiera obydwa typy
+// obsługa ścieżek względnych jest w kolejkaDodaj
 
 void dodajArgument() {
     char sciezka[PATH_MAX];
@@ -391,18 +408,6 @@ void dodajArgument() {
     if (scanf(" %s", sciezka) != 1) {
         wypiszBlad("Nie udało się odczytać ścieżki.");
         return;
-    }
-    if (sciezka[0] != '/') {
-        wypiszBlad("Podana ścieżka jest względna.");
-        printf("  Dodanie ścieżki względnej może nie działać poprawnie.\n");
-        printf("  Czy chcesz kontynuować? (t/n): ");
-        fflush(stdout);
-        char potwierdzenie;
-        scanf(" %c", &potwierdzenie);
-        if (potwierdzenie != 't' && potwierdzenie != 'T') {
-            printf("  Anulowano.\n");
-            return;
-        }
     }
     kolejkaDodaj(sciezka);
 }
@@ -534,10 +539,10 @@ int main(int argc, char *argv[]) {
                                 "set -e PATH; '%s'; exec fish -l", sciezkaAplikacji);
                         } else if (powloka == powlokaBASH) {
                             snprintf(poleceniePonownego, sizeof(poleceniePonownego),
-                                "source ~/.bashrc && '%s'; exec bash", sciezkaAplikacji);
+                                "export PATH=''; source ~/.bashrc && '%s'; exec bash", sciezkaAplikacji);
                         } else if (powloka == powlokaZSH) {
                             snprintf(poleceniePonownego, sizeof(poleceniePonownego),
-                                "source ~/.zshrc && '%s'; exec zsh", sciezkaAplikacji);
+                                "export PATH=''; source ~/.zshrc && '%s'; exec zsh", sciezkaAplikacji);
                         }
                         execlp(powlokaExec, powlokaExec, "-c", poleceniePonownego, NULL);
 

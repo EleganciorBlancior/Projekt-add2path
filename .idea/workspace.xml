@@ -19,7 +19,6 @@
   <component name="ChangeListManager">
     <list default="true" id="89d8c592-94f5-4980-ad1d-a35fad581151" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/add2path" beforeDir="false" afterPath="$PROJECT_DIR$/add2path" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/add2path.c" beforeDir="false" afterPath="$PROJECT_DIR$/add2path.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -99,7 +98,7 @@
       <workItem from="1779203813606" duration="5813000" />
       <workItem from="1779290171819" duration="2230000" />
       <workItem from="1779377656913" duration="669000" />
-      <workItem from="1780041916619" duration="3557000" />
+      <workItem from="1780041916619" duration="4993000" />
     </task>
     <servers />
   </component>
