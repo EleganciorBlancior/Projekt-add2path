@@ -342,7 +342,7 @@ int zapiszZmianyPowloka(TypPowloki powloka) {
             // grep -v zwraca wszystkie linie OPRÓCZ pasujących do wzorca - czyli usuwa wpis ze ścieżką
             // wynik zapisujemy do .tmp, potem mv zastępuje oryginał - nie można pisać i czytać tego samego pliku
 
-            fprintf(skrypt, "grep -v 'PATH.*%s' '%s' > '%s.tmp' && mv '%s.tmp' '%s'\n",
+            fprintf(skrypt, "grep -vF 'export PATH=\"$PATH:%s\"' '%s' > '%s.tmp' && mv '%s.tmp' '%s'\n",
                 zmiany[i].sciezka, sciezkaKonfigu, sciezkaKonfigu, sciezkaKonfigu, sciezkaKonfigu);
         }
     }
