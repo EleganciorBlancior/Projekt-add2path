@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+<action>
+	<icon>Terminal</icon>
+	<name>Otwórz w terminalu</name>
+	<submenu></submenu>
+	<unique-id>1780047040413018-1</unique-id>
+	<command>exo-open --working-directory %f --launch TerminalEmulator</command>
+	<description>Otwórz terminal w wybranym katalogu</description>
+	<range></range>
+	<patterns>*</patterns>
+	<directories/>
+</action>
+<action>
+	<icon>folder</icon>
+	<name>Otwórz jako administrator</name>
+	<submenu></submenu>
+	<unique-id>1780047040413283-2</unique-id>
+	<command>pkexec thunar %F</command>
+	<description>Otwórz ten katalog z uprawnieniami administratora</description>
+	<range></range>
+	<patterns>*</patterns>
+	<directories/>
+</action>
+<action>
+	<icon>emblem-symbolic-link</icon>
+	<name>Utwórz dowiązanie</name>
+	<submenu></submenu>
+	<unique-id>1780047040413574-3</unique-id>
+	<command>ln -s %f  &apos;Link to %n&apos;</command>
+	<description>Utwórz dowiązanie symboliczne dla każdego zaznaczonego elementu</description>
+	<range></range>
+	<patterns>*</patterns>
+	<directories/>
+	<other-files/>
+</action>
+<action>
+	<icon>application-certificate</icon>
+	<name>Zweryfikuj</name>
+	<submenu></submenu>
+	<unique-id>1780047040413730-4</unique-id>
+	<command>mint-iso-verify %f</command>
+	<description>Zweryfikuj autentyczność i integralność obrazu</description>
+	<range></range>
+	<patterns>*.iso;*.ISO</patterns>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+<action>
+	<icon>gtk-find</icon>
+	<name>Szukaj</name>
+	<submenu></submenu>
+	<unique-id>1780047040414066-5</unique-id>
+	<command>catfish %f</command>
+	<description>Wyszukiwanie plików</description>
+	<range></range>
+	<patterns>*</patterns>
+	<directories/>
+</action>
+</actions>
