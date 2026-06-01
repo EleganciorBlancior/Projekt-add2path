@@ -171,9 +171,8 @@ int czyWPath(const char *sciezka) {
 
 void kolejkaDodaj(const char *sciezka) {
 
-    // ścieżki względne zaczynają się od czegoś innego niż / - nie możemy sprawdzić ich przez access()
-    // bo access szuka względem bieżącego katalogu i mógłby przypadkowo znaleźć coś co nie ma sensu w PATH
-    // przy ścieżce bezwzględnej sprawdzamy czy katalog faktycznie istnieje na dysku
+    // ścieżki bezwzględne zaczynają się od / - sprawdzamy czy katalog faktycznie istnieje na dysku
+    // ścieżki względne pomijamy - access szukałby względem bieżącego katalogu co nie ma sensu w PATH
 
     if (sciezka[0] == '/') {
         wypiszInfo("Sprawdzanie czy katalog istnieje...");
@@ -342,7 +341,7 @@ int zapiszZmianyPowloka(TypPowloki powloka) {
             // grep -v zwraca wszystkie linie OPRÓCZ pasujących do wzorca - czyli usuwa wpis ze ścieżką
             // wynik zapisujemy do .tmp, potem mv zastępuje oryginał - nie można pisać i czytać tego samego pliku
 
-            fprintf(skrypt, "grep -vF 'export PATH=\"$PATH:%s\"' '%s' > '%s.tmp' && mv '%s.tmp' '%s'\n",
+            fprintf(skrypt, "grep -v 'PATH.*%s' '%s' > '%s.tmp' && mv '%s.tmp' '%s'\n",
                 zmiany[i].sciezka, sciezkaKonfigu, sciezkaKonfigu, sciezkaKonfigu, sciezkaKonfigu);
         }
     }
@@ -399,7 +398,7 @@ void usunBiezacy() {
 }
 
 // ścieżki bezwzględne zaczynają się od / np. /home/pawelb/projekty
-// obsługa ścieżek względnych jest w kolejkaDodaj
+// ścieżki względne od czegoś innego np. ./projekty - w PATH powinny być tylko bezwzględne ale add2path wspiera obydwa typy
 
 void dodajArgument() {
     char sciezka[PATH_MAX];
@@ -529,20 +528,21 @@ int main(int argc, char *argv[]) {
 
                         sleep(1);
                         char *powlokaExec = getenv("SHELL");
-                        char poleceniePonownego[PATH_MAX + 64];
+                        char poleceniePonownego[PATH_MAX * 2 + 128];
 
                         // dla fish czyścimy PATH żeby wczytał go na nowo z fish_variables
-                        // dla bash/zsh source wczytuje nowy .bashrc/.zshrc ze świeżymi wpisami PATH
+                        // dla bash/zsh resetujemy PATH do minimalnego systemowego przed startem nowej sesji
+                        // dzięki temu .bashrc wczyta ścieżki od zera bez duplikatów z poprzedniej sesji
 
                         if (powloka == powlokaFISH) {
                             snprintf(poleceniePonownego, sizeof(poleceniePonownego),
                                 "set -e PATH; '%s'; exec fish -l", sciezkaAplikacji);
                         } else if (powloka == powlokaBASH) {
                             snprintf(poleceniePonownego, sizeof(poleceniePonownego),
-                                "\"%s\"; exec /bin/bash -l", sciezkaAplikacji);
+                                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /bin/bash -lc '\"%s\"; exec /bin/bash -l'", sciezkaAplikacji);
                         } else if (powloka == powlokaZSH) {
                             snprintf(poleceniePonownego, sizeof(poleceniePonownego),
-                                "\"%s\"; exec /bin/zsh -l", sciezkaAplikacji);
+                                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /bin/zsh -lc '\"%s\"; exec /bin/zsh -l'", sciezkaAplikacji);
                         }
                         execlp(powlokaExec, powlokaExec, "-c", poleceniePonownego, NULL);
 
@@ -551,7 +551,7 @@ int main(int argc, char *argv[]) {
                         // a po jej zamknięciu odpala interaktywną sesję fish z nowym $PATH
                         // jeśli execlp się powiedzie, kod poniżej nigdy się nie wykona
 
-                        wypiszBlad("Nie udało się zrestartować powłoki."); // dotarcie tutaj = execlp zawiodło
+                        wypiszBlad("Nie udało się zrestartować powłoki.");           // dotarcie tutaj = execlp zawiodło
                     }
                 } else {
                     printf("  Anulowano.\n");
